@@ -1,0 +1,48 @@
+# ──────────────────────────────────────────────────────────────────────────
+# GitHub automation config — the single source of truth for all rules.
+# Governs both automations: issue → PR (resolve-issue skill) and PR review
+# (review-pr skill). Edit this file to tune behavior; no code changes needed.
+# ──────────────────────────────────────────────────────────────────────────
+
+# Default model for every automation. Any Flue model specifier works
+# (e.g. openai/gpt-5.5, anthropic/claude-opus-4-7). OpenAI is the default.
+# Per-automation overrides are allowed (see `review.model` below).
+model: openai/gpt-5.5
+
+# Repo the automations operate on (read issues/PRs, open PRs), as "owner/name".
+# Leave empty to use the repo the GitHub Action runs in ($GITHUB_REPOSITORY).
+repo: ""
+
+# ── Issue → PR automation (resolve-issue skill / .github/workflows/issue-to-pr.yml) ──
+
+# Pull-request settings used when opening a PR for an issue.
+pr:
+  base: main                          # base branch PRs target
+  branchPrefix: bot/issue-            # head branch name = "<branchPrefix><issueNumber>"
+  draft: false                        # false = open ready-for-review PRs
+  titleTemplate: "Fix #{number}: {title}"
+
+# Issue-classification labels: the ONLY labels resolve-issue may apply to an
+# issue/PR. Descriptions help it choose correctly. (PR-review labels live under
+# `review.labels`.) Add/rename freely — missing labels are created automatically.
+labels:
+  - { name: bug,           description: "A defect or incorrect behavior" }
+  - { name: enhancement,   description: "A new feature or improvement" }
+  - { name: documentation, description: "Docs-only change" }
+  - { name: question,      description: "Needs clarification; no code change made" }
+
+limits:
+  maxFilesChanged: 20                 # resolve-issue aborts + comments rather than sprawling
+
+# ── PR review automation (review-pr skill / .github/workflows/review-pr.yml) ──
+review:
+  # Optional model override for reviews. Falls back to top-level `model`.
+  model: ""
+  # What the reviewer should focus on.
+  focus: "correctness, security, error handling, and adherence to AGENTS.md conventions"
+  # ONLY these labels may be applied during review. Missing labels are created.
+  labels:
+    - { name: "needs-changes", description: "Automated review found issues to address" }
+    - { name: "reviewed",      description: "Automated review completed; no blocking issues" }
+  # Skip reviewing very large diffs (post a note instead). 0 = no cap.
+  maxChangedFiles: 50

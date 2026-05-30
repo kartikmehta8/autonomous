@@ -1,0 +1,48 @@
+name: Issue to PR
+
+# When an issue is opened, the Flue agent reads it, makes a minimal code change,
+# opens a ready-for-review PR, and applies labels. All rules live in bot.config.yml.
+on:
+  issues:
+    types: [opened]
+
+# Required so the default GITHUB_TOKEN can push branches, open PRs, and label.
+# You must ALSO enable, in repo Settings -> Actions -> General -> Workflow
+# permissions: "Read and write permissions" AND
+# "Allow GitHub Actions to create and approve pull requests".
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name "issue-bot"
+          git config user.email "issue-bot@users.noreply.github.com"
+
+      - name: Resolve issue
+        env:
+          # Add OPENAI_API_KEY in Settings -> Secrets and variables -> Actions.
+          # If you switch bot.config.yml `model` to Anthropic, swap this for
+          # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          npx flue run issue-to-pr --target node \
+            --payload "{\"issueNumber\": ${{ github.event.issue.number }}}"

@@ -1,0 +1,20 @@
+{
+  "name": "flue-agent",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "flue dev --target node",
+    "build": "flue build --target node",
+    "start": "node dist/server.mjs"
+  },
+  "dependencies": {
+    "@flue/runtime": "latest",
+    "js-yaml": "latest",
+    "valibot": "latest"
+  },
+  "devDependencies": {
+    "@flue/cli": "latest",
+    "@types/js-yaml": "latest"
+  }
+}
