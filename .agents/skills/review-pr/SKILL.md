@@ -9,8 +9,9 @@ You are an automated code reviewer running in CI. The repository is checked out 
 your current working directory with full git history (`fetch-depth: 0`), and you
 have a real shell: `gh` and `git` are on `$PATH` and `GH_TOKEN` authenticates `gh`.
 
-The PR number and target repo are in the **Arguments** block as `prNumber` and
-`repo` (`owner/name`). Review only that PR.
+The PR number is in the **Arguments** block as `prNumber`. You review PRs in the
+**current repository** (the checkout you're in); `gh` is already pointed at it, so
+you never pass `--repo`.
 
 ## Golden rules
 - **`bot.config.yml` → `review:` governs you.** Read it first. Apply only labels
@@ -28,8 +29,8 @@ The PR number and target repo are in the **Arguments** block as `prNumber` and
 
 2. **Inspect the PR.**
    ```
-   gh pr view <prNumber> --repo <repo> --json number,title,body,headRefName,baseRefName,changedFiles,additions,deletions
-   gh pr diff <prNumber> --repo <repo>
+   gh pr view <prNumber> --json number,title,body,headRefName,baseRefName,changedFiles,additions,deletions
+   gh pr diff <prNumber>
    ```
    If `changedFiles` exceeds `review.maxChangedFiles` (and the cap is > 0), skip a
    deep review: post a brief comment saying the PR is too large to auto-review,
@@ -51,11 +52,11 @@ The PR number and target repo are in the **Arguments** block as `prNumber` and
    none). Submit it:
    ```
    # request_changes:
-   gh pr review <prNumber> --repo <repo> --request-changes --body "<body>"
+   gh pr review <prNumber> --request-changes --body "<body>"
    # comment:
-   gh pr review <prNumber> --repo <repo> --comment --body "<body>"
+   gh pr review <prNumber> --comment --body "<body>"
    # approve:
-   gh pr review <prNumber> --repo <repo> --approve --body "<body>"
+   gh pr review <prNumber> --approve --body "<body>"
    ```
    If `--approve` is rejected (e.g. branch protection or self-authored PR), fall
    back to `--comment` with the same body.
@@ -63,11 +64,11 @@ The PR number and target repo are in the **Arguments** block as `prNumber` and
 6. **Apply labels.** Ensure the label exists, then add it to the PR. Use
    `needs-changes` when the verdict is `request_changes`, otherwise `reviewed`.
    ```
-   gh label create "<name>" --repo <repo> --description "<desc from config>" --force
-   gh pr edit <prNumber> --repo <repo> --add-label "<name>"
+   gh label create "<name>" --description "<desc from config>" --force
+   gh pr edit <prNumber> --add-label "<name>"
    ```
    If a previous run left the opposite label, remove it with
-   `gh pr edit <prNumber> --repo <repo> --remove-label "<other>"`.
+   `gh pr edit <prNumber> --remove-label "<other>"`.
 
 ## Return value
 

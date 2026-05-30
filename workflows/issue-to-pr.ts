@@ -16,7 +16,6 @@ import { load } from 'js-yaml';
 
 interface BotConfig {
   model?: string;
-  repo?: string;
 }
 
 export async function run({ init, payload }: FlueContext<{ issueNumber: number }>) {
@@ -39,11 +38,11 @@ export async function run({ init, payload }: FlueContext<{ issueNumber: number }
 
   // The skill reads bot.config.yml itself for labels / PR rules / limits,
   // so it stays the single source of truth. We only pass what identifies
-  // the work to do.
+  // the work to do. The repo is implicit — `gh` operates on the current
+  // checkout (GH_REPO is set in the GitHub Action).
   const { data } = await session.skill('resolve-issue', {
     args: {
       issueNumber: payload.issueNumber,
-      repo: cfg.repo || process.env.GITHUB_REPOSITORY,
     },
     result: v.object({
       action_taken: v.picklist(['pr_created', 'comment_only', 'skipped']),
