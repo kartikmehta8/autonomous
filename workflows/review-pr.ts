@@ -31,8 +31,6 @@ export async function run({ init, payload }: FlueContext<{ prNumber: number }>) 
   const harness = await init(agent);
   const session = await harness.session();
 
-  // Repo is implicit — `gh` operates on the current checkout (GH_REPO is set
-  // in the GitHub Action). We only pass what identifies the work.
   const { data } = await session.skill('review-pr', {
     args: {
       prNumber: payload.prNumber,

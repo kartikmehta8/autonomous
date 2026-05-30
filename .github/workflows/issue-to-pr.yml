@@ -42,7 +42,7 @@ jobs:
           # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}   # points `gh` at this repo
+          GH_REPO: ${{ github.repository }}
         run: |
           npx flue run issue-to-pr --target node \
             --payload "{\"issueNumber\": ${{ github.event.issue.number }}}"
